@@ -97,5 +97,6 @@ class CLexer {
 				++end;
 			}
 			if(begin != query.cend() - 1) tmp_query += std::string(begin, end);
+			query = tmp_query;
 		}
 };
