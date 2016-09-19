@@ -65,7 +65,7 @@ class CLexer {
 			if(begin != query.end() - 1) ++words_num;
 			return words_num;
 		}
-		std::string _get_synonym(const std::string& input, int penalty) {
+		std::string _get_synonym(const std::string& input, double penalty) {
 			double max_dist = 0.0;
 			double dist = 0.0;
 			size_t max_pos = 0;
@@ -78,13 +78,13 @@ class CLexer {
 				if(max_dist == 1) break;
 			}
 			if(max_dist - m_minimal_distance < Utility::EPS) return input;
-			m_score -= (1 - max_dist) * penalty;
+			m_score -= ((max_dist - m_minimal_distance) / (1 - m_minimal_distance)) * penalty;
 			return Utility::keywords[max_pos];
 		}
 	public:
 		CLexer() : m_score(100.0) {}
 		void normalize_query(std::string& query) {
-			double penalty = Utility::PENALTY_WRONG_KEYWORD / _count_words(query);
+			double penalty = Utility::LEXICAL_PENALTY_PERCENTAGE / _count_words(query);
 			std::string::const_iterator begin = query.cbegin();
 			std::string::const_iterator end = query.cbegin();
 			std::string tmp_query = "";

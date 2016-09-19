@@ -2,7 +2,7 @@
 
 namespace Utility {
 	constexpr double EPS = 0.0001;
-	constexpr int PENALTY_WRONG_KEYWORD = 10;
+	constexpr int LEXICAL_PENALTY_PERCENTAGE = 40;
 	constexpr std::array<char[], 246> keywords = { "ABS", "ABSOLUTE", "ACTION", 
 		"ADA", "ADD", "ADMIN", "AFTER", "ALL", "ALLOCATE", "ALTER", "ALWAYS", "AND",
 		"ANY", "ARE", "ARRAY", "AS", "ASC", "ASENSITIVE", "ASSERTION", "ASSIGNMENT", 
