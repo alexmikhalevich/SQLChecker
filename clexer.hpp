@@ -2,19 +2,10 @@
 #include <cmath>
 #include <vector>
 #include <cctype>
-#include <boost/spirit/include/lex_lexertl.hpp>
+#include "cquery.h"
 #include "utility.h"
 
-namespace lex = boost::spirit::lex;
-
 namespace Analyzer {
-	template<typename Lexer>
-	class CTokenizer : public lex::lexer<Lexer> {
-		public:
-			CTokenizer() {
-				this->self.add_pattern("KEYWORD", Utility::KEYWORDS); 
-			}
-	};
 	class CAnalyzer {
 		private:
 			static constexpr double m_scale_prefix = 0.1;
@@ -56,7 +47,8 @@ namespace Analyzer {
 				if(d_j < m_boost_threshold) return d_j;
 				else return d_j + common_prefix * m_scale_prefix * (1 - d_j);
 			}
-			static void _next_alphabet(std::string::const_iterator& begin, std::string::const_iterator& end, std::string* log = NULL) {
+			static void _next_alphabet(std::string::const_iterator& begin, std::string::const_iterator& end, 
+					std::string* log = NULL) {
 				while(!isalpha(*end)) {
 					if(log) log->push_back(*end);
 					begin = ++end;
@@ -99,21 +91,19 @@ namespace Analyzer {
 			}
 		public:
 			CAnalyzer() : m_score(100.0) {}
-			void correct_query(std::string& query) {
-				double penalty = Utility::LEXICAL_PENALTY_PERCENTAGE / _count_words(query);
-				std::string::const_iterator begin = query.cbegin();
-				std::string::const_iterator end = query.cbegin();
-				std::string tmp_query = "";
+			void tokenize(const CQuery& query) {
+				std::string s_query = query.get_query();
+				double penalty = Utility::LEXICAL_PENALTY_PERCENTAGE / _count_words(s_query);
+				std::string::const_iterator begin = s_query.cbegin();
+				std::string::const_iterator end = s_query.cbegin();
 				_next_alphabet(begin, end, &tmp_query);
-				while(end != query.cend()) {
+				while(end != s_query.cend()) {
 					if(!isalpha(*end)) {
-						tmp_query += _get_synonym(std::string(begin, end), penalty);
-						_next_alphabet(begin, end, &tmp_query);
+						query.add_word(_get_synonym(std::string(begin, end), penalty));
+						_next_alphabet(begin, end);
 					}
 					++end;
 				}
-				if(begin != query.cend() - 1) tmp_query += std::string(begin, end);
-				query = tmp_query;
 			}
 	};
 }
