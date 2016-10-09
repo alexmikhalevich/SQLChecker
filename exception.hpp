@@ -12,3 +12,13 @@ class ExInvalidArguments {
 			return "[EE]: " + m_location + ": Invalid arguments";
 		}
 };
+
+class ExOutOfRange {
+	private:
+		std::string m_location;
+	public:
+		ExOutOfRange(const std::string& location) : m_location(location) {}
+		std::string what() const {
+			return "[EE]: " + m_location + ": Out of range";
+		}
+};
