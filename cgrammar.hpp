@@ -1,5 +1,6 @@
 #include "query.hpp"
 #include "cparser.hpp"
+#include "etalonquery.hpp"
 
 namespace Analyzer {
 	class CGrammar { 
