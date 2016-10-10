@@ -22,3 +22,13 @@ class ExOutOfRange {
 			return "[EE]: " + m_location + ": Out of range";
 		}
 };
+
+class ExNoBitmask {
+	private:
+		std::string m_location;
+	public:
+		ExNoBitmask(const std::string& location) : m_location(location) {}
+		std::string what() const {
+			return "[EE]: " + m_location + ": No bitmask was provided";
+		}
+};
