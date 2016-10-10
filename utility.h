@@ -2,6 +2,8 @@
 #include <vector>
 #include <cstdlib>
 #include <cstring>
+#include <algorithm>
+#include <fstream>
 #include "clog.h"
 #include "exception.hpp"
 
@@ -9,47 +11,66 @@ namespace Utility {
 	constexpr double EPS = 0.0001;
 	constexpr double LEXICAL_PENALTY_PERCENTAGE = 40.0;
 	constexpr double GRAMMAR_PENALTY_PERCENTAGE = 100.0 - LEXICAL_PENALTY_PERCENTAGE;
-	constexpr size_t KEYWORDS_NUM = 220;
-	const std::string KEYWORDS = "ADD|ALL|ALLOCATE|ALTER|AND|ANY|ARE|ARRAY|AS|ASENSITIVE|ASYMMETRIC|AT|ATOMIC|AUTHORIZATION|BEGIN|\
-				      BETWEEN|BIGINT|BINARY|BLOB|BOOLEAN|BOTH|BY|CALL|CALLED|CASCADED|CASE|CAST|CHAR|CHARACTER|CHECK|CLOB|\
-				      CLOSE|COLLATE|COLUMN|COMMIT|CONNECT|CONSTRAINT|CONTINUE|CORRESPONDING|CREATE|CROSS|CUBE|CURRENT|\
-				      CURRENT_DATE|CURRENT_DEFAULT_TRANSFORM_GROUP|CURRENT_PATH|CURRENT_ROLE|CURRENT_TIME|\
-				      CURRENT_TIMESTAMP|CURRENT_TRANSFORM_GROUP_FOR_TYPE|CURRENT_USER|CURSOR|CYCLE|DATE|DAY|DEALLOCATE|\
-				      DEC|DECIMAL|DECLARE|DEFAULT|DELETE|DEREF|DESCRIBE|DETERMINISTIC|DISCONNECT|DISTINCT|DOUBLE|DROP|\
-				      DYNAMIC|EACH|ELEMENT|ELSE|END|END-EXEC|ESCAPE|EXCEPT|EXEC|EXECUTE|EXISTS|EXTERNAL|FALSE|FETCH|\
-				      FILTER|FLOAT|FOR|FOREIGN|FREE|FROM|FULL|FUNCTION|GET|GLOBAL|GRANT|GROUP|GROUPING|HAVING|HOLD|HOUR|\
-				      IDENTITY|IMMEDIATE|IN|INDICATOR|INNER|INOUT|INPUT|INSENSITIVE|INSERT|INT|INTEGER|INTERSECT|INTERVAL|\
-				      INTO|IS|ISOLATION|JOIN|LANGUAGE|LARGE|LATERAL|LEADING|LEFT|LIKE|LOCAL|LOCALTIME|LOCALTIMESTAMP|\
-				      MATCH|MEMBER|MERGE|METHOD|MINUTE|MODIFIES|MODULE|MONTH|MULTISET|NATIONAL|NATURAL|NCHAR|NCLOB|NEW|\
-				      NO|NONE|NOT|NULL|NUMERIC|OF|OLD|ON|ONLY|OPEN|OR|ORDER|OUT|OUTER|OUTPUT|OVER|OVERLAPS|PARAMETER|\
-				      PARTITION|PRECISION|PREPARE|PRIMARY|PROCEDURE|RANGE|READS|REAL|RECURSIVE|REF|REFERENCES|REFERENCING|\
-				      REGR_AVGX|REGR_AVGY|REGR_COUNT|REGR_INTERCEPT|REGR_R2|REGR_SLOPE|REGR_SXX|REGR_SXY|REGR_SYY|RELEASE|\
-				      RESULT|RETURN|RETURNS|REVOKE|RIGHT|ROLLBACK|ROLLUP|ROW|ROWS|SAVEPOINT|SCROLL|SEARCH|SECOND|SELECT|\
-				      SENSITIVE|SESSION_USER|SET|SIMILAR|SMALLINT|SOME|SPECIFIC|SPECIFICTYPE|SQL|SQLEXCEPTION|SQLSTATE|\
-				      SQLWARNING|START|STATIC|SUBMULTISET|SYMMETRIC|SYSTEM|SYSTEM_USER|TABLE|THEN|TIME|TIMESTAMP|\
-				      TIMEZONE_HOUR|TIMEZONE_MINUTE|TO|TRAILING|TRANSLATION|TREAT|TRIGGER|TRUE|UESCAPE|UNION|UNIQUE|\
-				      UNKNOWN|UNNEST|UPDATE|UPPER|USER|USING|VALUE|VALUES|VAR_POP|VAR_SAMP|VARCHAR|VARYING|WHEN|WHENEVER|\
-				      WHERE|WIDTH_BUCKET|WINDOW|WITH|WITHIN|WITHOUT|YEAR";
+	
+	/*template<class T>
+	class CSingleton {
+		private:
+			static T* m_object = NULL;
+		public:
+			CSingleton() = delete;
+			~CSingleton() = delete;
+			CSingleton(const CSingleton&) = delete;
+			CSingleton operator= (const CSingleton&) = delete;
+			static T* get_instance() {
+				if(!m_object) m_object = new T; //TODO 
+				return m_object;
+			}
+	};*/
+
 	class BitMask {
 		private:
-			std::array<bool, KEYWORDS_NUM> m_mask;
-			void set_bit(size_t pos, bool val) { m_mask[pos] = val; }
+			std::array<bool, Keywords::amount()> m_mask;
 		public:
 			BitMask() {}
-			BitMask(const std::array<bool, KEYWORDS_NUM>& mask) : m_mask(mask) {}
-			bool* mask() { return m_mask; }
-			size_t size() { return m_size; } 
+			BitMask(const std::array<bool, Keywords::amount()>& mask) : m_mask(mask) {}
+			void append_bit(size_t pos, bool bit) {
+				if(pos >= Keywords::amount()) throw new ExOutOfRange("utility.h: append_bit()");
+				m_mask[pos] = bit; 
+			}
+			bool empty() const { return m_mask.empty(); }
 			BitMask operator& (const BitMask& a, const BitMask& b) {
-				if(a.size() != b.size()) throw new ExInvalidArguments(std::string("utility.h in BitMask operator&"));
-				BitMask bm(res, a.size());
-				for(size_t i = 0; i < a.size(); ++i) bm.set_bit(i, a.m_mask[i] & b.m_mask[i]);
+				BitMask bm;
+				for(size_t i = 0; i < Keywords::amount(); ++i) bm.m_mask[i] = a.m_mask[i] & b.m_mask[i];
 				return bm;
 			}
 			BitMask operator| (const BitMask& a, const BitMask& b) {
-				if(a.size() != b.size()) throw new ExInvalidArguments(std::string("utility.h in BitMask operator|"));
-				BitMask bm(res, a.size());
-				for(size_t i = 0; i < a.size(); ++i) bm.set_bit(i, a.m_mask[i] | b.m_mask[i]);
+				BitMask bm;
+				for(size_t i = 0; i < Keywords::amount(); ++i) bm.m_mask[i] = a.m_mask[i] | b.m_mask[i];
 				return bm;
+			}
+	};
+
+	class Keywords {
+		private:
+			static std::map<std::string, size_t> m_keywords;
+		public:
+			Keywords(const std::string& filename) { upload_keywords(filename); }
+			Keywords() = delete;
+			size_t amount() const { return m_keywords.size(); }
+			size_t get_pos(const std::string& keyword) const {
+				return m_keywords.find(keywords)->second;
+			}
+			static void upload_keywords(const std::string& filename) {
+				if(!m_keywords.empty()) m_keywords.clear();
+				std::fstream in(filename);
+				std::vector<std::string> keywords;
+				std::string tmp;
+				while(in >> tmp) {
+					keywords.push_back(tmp);
+				}
+				std::sort(keywords.begin(), keywords.end(), std::less<std::string>());
+				for(size_t i = 0; i < keywords.size(); ++i) {
+					m_keywords.insert(std::pair<std::string, size_t>(keywords[i], i));
 			}
 	};
 };
