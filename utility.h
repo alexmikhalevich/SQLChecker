@@ -54,20 +54,13 @@ namespace Utility {
 		private:
 			static std::map<std::string, size_t> m_keywords;
 		public:
-			Keywords(const std::string& filename) { upload_keywords(filename); }
-			Keywords() = delete;
+			Keywords();
 			size_t amount() const { return m_keywords.size(); }
 			size_t get_pos(const std::string& keyword) const {
 				return m_keywords.find(keywords)->second;
 			}
-			static void upload_keywords(const std::string& filename) {
+			static void upload_keywords(std::vector<std::string>& keywords) {
 				if(!m_keywords.empty()) m_keywords.clear();
-				std::fstream in(filename);
-				std::vector<std::string> keywords;
-				std::string tmp;
-				while(in >> tmp) {
-					keywords.push_back(tmp);
-				}
 				std::sort(keywords.begin(), keywords.end(), std::less<std::string>());
 				for(size_t i = 0; i < keywords.size(); ++i) {
 					m_keywords.insert(std::pair<std::string, size_t>(keywords[i], i));
