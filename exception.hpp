@@ -32,3 +32,13 @@ class ExNoBitmask {
 			return "[EE]: " + m_location + ": No bitmask was provided";
 		}
 };
+
+class ExTypeNotFound {
+	private:
+		std::string m_location;
+	public:
+		ExTypeNotFound(const std::string& location) : m_location(location) {}
+		std::string what() const {
+			return "[EE]: " + m_location + ": Unknown type";
+		}
+};
