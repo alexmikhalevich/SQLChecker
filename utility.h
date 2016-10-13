@@ -12,21 +12,6 @@ namespace Utility {
 	constexpr double LEXICAL_PENALTY_PERCENTAGE = 40.0;
 	constexpr double GRAMMAR_PENALTY_PERCENTAGE = 100.0 - LEXICAL_PENALTY_PERCENTAGE;
 	
-	/*template<class T>
-	class CSingleton {
-		private:
-			static T* m_object = NULL;
-		public:
-			CSingleton() = delete;
-			~CSingleton() = delete;
-			CSingleton(const CSingleton&) = delete;
-			CSingleton operator= (const CSingleton&) = delete;
-			static T* get_instance() {
-				if(!m_object) m_object = new T; //TODO 
-				return m_object;
-			}
-	};*/
-
 	class BitMask {
 		private:
 			std::array<bool, Keywords::amount()> m_mask;
