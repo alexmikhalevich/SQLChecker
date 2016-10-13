@@ -42,3 +42,13 @@ class ExTypeNotFound {
 			return "[EE]: " + m_location + ": Unknown type";
 		}
 };
+
+class ExSyntaxError {
+	private:
+		std::string m_location;
+	public:
+		ExSyntaxError(const std::string& location) : m_location(location) {}
+		std::string what() const {
+			return "[EE]: Syntax error in " + m_location;
+		}
+};
