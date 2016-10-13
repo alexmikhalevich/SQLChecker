@@ -6,7 +6,7 @@
 #include "utility.h"
 
 namespace Analyzer {
-	class CAnalyzer {
+	class CLexer {
 		private:
 			static constexpr double m_scale_prefix = 0.1;
 			static constexpr double m_boost_threshold = 0.7;
@@ -90,7 +90,7 @@ namespace Analyzer {
 				return keyword;
 			}
 		public:
-			CAnalyzer() : m_score(100.0) {}
+			CAnalyzer() : m_score(100.0) {}	//TODO: construct from CQuery and CParser
 			void tokenize(const CQuery& query) {
 				std::string s_query = query.get_query();
 				double penalty = Utility::LEXICAL_PENALTY_PERCENTAGE / _count_words(s_query);
