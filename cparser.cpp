@@ -56,7 +56,6 @@ void CParser::parse() {
 		}
 		if(tmp == "RULE") {
 			bool basis_exists = false;
-			CEtalonQuery query;
 			if(m_tokens.empty() || m_tokens.front() == "{") throw new ExSyntaxError(m_filename + ": Missing rule name");
 			std::string rule_name = m_tokens.front();
 			m_tokens.pop();
@@ -79,13 +78,17 @@ void CParser::parse() {
 					if(m_tokens.empty()) throw new ExSyntaxError(m_filename + ": Unexpected end of file");
 				}
 			}
-			query.set_bitmask(bm);
 			else if(m_tokens.front() == "_full_") {
 				//TODO
 			}
 			if(!basis_exists) throw new ExSyntaxError(m_filename + ": Missing _basis_ in " + rule_name + " rule");
 			if(!m_tokens.empty()) opened_block = !(m_tokens.front() == "}");
 			if(opened_block) throw new ExSyntaxError(m_filename + ": Missing '}' after RULE block");
+			CEtalonQuery* query = new CEtalonQuery;
+			query->set_bitmask(bm);
+			//TODO: set full?
+			auto ret = Query::query_types.insert(std::pair<std::string, CEtalonQuery*>(rule_name, query));
+			if(ret.second == false) throw new ExSyntaxError(m_filename + ": Rule " + rule_name + " has been already added"); 
 		}
 	}
 }
