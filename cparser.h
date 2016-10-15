@@ -9,6 +9,7 @@ class CParser {
 		std::string m_filename;
 		std::queue<std::string> m_tokens;
 		void _get_tokens(const std::string&) const;
+		bool _service(const std::string&) const;
 	public:
 		CParser(const std::string& filename) : m_filename(filename) {}
 		CParser() = delete;
